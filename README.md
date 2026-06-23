@@ -1,70 +1,287 @@
-# Getting Started with Create React App
+# Healthcare Dashboard - Redux Saga 
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Project Overview
 
-## Available Scripts
+This project is a Healthcare Dashboard built using React, Redux, and Redux-Saga.
 
-In the project directory, you can run:
+The application demonstrates advanced state management and asynchronous handling using Redux-Saga while simulating real-world healthcare workflows such as patient management, patient details retrieval, offline form submission, and request cancellation.
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Features
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 1. Patient List
 
-### `npm test`
+- Fetches patient data from API.
+- Stores all patient records in Redux Store.
+- Displays patients using pagination.
+- Avoids unnecessary API calls by using data already available in Redux Store.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 2. Patient Details
 
-### `npm run build`
+- Displays detailed information of a selected patient.
+- Uses Redux-Saga `takeLatest()` to cancel previous requests when multiple patients are selected quickly.
+- Ensures only the latest selected patient's data is displayed.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 3. Patient Registration Form
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Allows user to add new patient details.
+- Captures:
+  - Name
+  - Age
+  - Disease
+  - Doctor Assigned
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 4. Offline Queue Handling
 
-### `npm run eject`
+- Detects network availability.
+- If internet is unavailable:
+  - Form submissions are stored in an offline queue.
+- When internet connection is restored:
+  - Queued submissions can be processed and submitted automatically.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 5. Loading & Error Handling
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- Displays loading state during API calls.
+- Displays error messages when API requests fail.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Bonus Features Implemented
 
-## Learn More
+### Request Cancellation
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Implemented using:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```javascript
+takeLatest()
+```
 
-### Code Splitting
+When a user quickly switches between patients:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- Previous API requests are cancelled.
+- Only the latest request is processed.
 
-### Analyzing the Bundle Size
+### Retry Mechanism
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Implemented using:
 
-### Making a Progressive Web App
+```javascript
+retry()
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+If an API request fails:
 
-### Advanced Configuration
+- Redux-Saga automatically retries the API call.
+- Improves reliability during temporary network issues.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Network Status Indicator
 
-### Deployment
+Displays:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Online
+- Offline
 
-### `npm run build` fails to minify
+based on browser network status.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+## Technologies Used
+
+- React
+- Redux
+- React Redux
+- Redux Saga
+- JavaScript (ES6+)
+- CSS3
+
+---
+
+## Project Structure
+
+src
+│
+├── components
+│ ├── PatientList.js
+│ ├── PatientDetails.js
+│ └── PatientForm.js
+│
+├── redux
+│ ├── actions.js
+│ ├── reducer.js
+│ ├── saga.js
+│ └── store.js
+│
+├── App.js
+├── App.css
+└── index.js
+
+---
+
+## Redux Saga Flow
+
+```text
+Component
+   ↓
+Dispatch Action
+   ↓
+Watcher Saga
+   ↓
+Worker Saga
+   ↓
+API Call
+   ↓
+put()
+   ↓
+Reducer
+   ↓
+Redux Store Updated
+   ↓
+UI Re-render
+```
+
+---
+
+## Pagination Optimization
+
+Instead of calling the API for every page:
+
+1. Fetch all patient records once.
+2. Store them in Redux Store.
+3. Display records using array slicing.
+
+Example:
+
+```javascript
+const start = (currentPage - 1) * 5;
+const currentPatients = patients.slice(start, start + 5);
+```
+
+Benefits:
+
+- Better performance
+- Reduced API calls
+- Faster page navigation
+
+---
+
+## Offline Queue Workflow
+
+```text
+User Submits Form
+        ↓
+Check Internet
+        ↓
+isOnline ? Submit API
+        ↓
+isOffline ? Store In Queue
+        ↓
+Internet Restored
+        ↓
+Process Queue
+```
+
+---
+
+## takeLatest Workflow
+
+```text
+Doctor Clicks Patient A
+        ↓
+Request Starts
+
+Doctor Clicks Patient B
+        ↓
+Cancel Patient A Request
+        ↓
+Load Patient B Details
+```
+
+This prevents stale data from appearing in the UI.
+
+---
+
+## Installation
+
+### Clone Repository
+
+```bash
+git clone <repository-url>
+```
+
+### Navigate To Project
+
+```bash
+cd healthcare-dashboard
+```
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Install Redux Saga
+
+```bash
+npm install redux react-redux redux-saga
+```
+
+### Start Application
+
+```bash
+npm start
+```
+
+Application will run at:
+
+```text
+http://localhost:3000
+```
+
+---
+
+## API Used
+
+JSONPlaceholder APIs were used for demonstration purposes.
+
+Patients:
+
+```text
+https://jsonplaceholder.typicode.com/users
+```
+
+Patient Details:
+
+```text
+https://jsonplaceholder.typicode.com/users/:id
+```
+
+---
+
+## Learning Outcomes
+
+Through this project, the following concepts were implemented and understood:
+
+- Redux Store Configuration
+- Redux Reducers
+- Redux Actions
+- Redux-Saga Middleware
+- Generator Functions
+- takeEvery()
+- takeLatest()
+- call()
+- put()
+- select()
+- retry()
+- Pagination Optimization
+- Offline Queue Handling
+- Network Monitoring
+- Request Cancellation
+- Error Handling
+
+---
+
+## Author
+
+Hemadharshini A

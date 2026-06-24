@@ -10,7 +10,7 @@ export default function PatientList()
 
   useEffect(() => {
     dispatch({ type: FETCH_PATIENTS });
-  }, [dispatch]);
+  }, []);
 
   const start = (currentPage - 1) * 5;
   const current = patients.slice(start, start + 5);

@@ -37,7 +37,7 @@ export default function App(){
     window.removeEventListener("offline", handleOffline);
   };
 
-}, [dispatch]);
+}, []);
 
 return (
   <div className="app-container">

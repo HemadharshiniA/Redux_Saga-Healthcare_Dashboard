@@ -1,5 +1,5 @@
-import { call, put, takeEvery, takeLatest, retry, select } from "redux-saga/effects";
-
+import { call, put, takeEvery, takeLatest, retry, select, cancelled } from "redux-saga/effects";
+import {delay} from "redux-saga/effects";
 import * as A from "./actions";
 
 // API CALLS
@@ -23,6 +23,8 @@ const submitPatientAPI = (data) =>
   }).then(r => r.json());
 
 
+// Worker Saga
+
 // FETCH PATIENTS
 function* fetchPatientsSaga() {
 
@@ -40,7 +42,7 @@ function* fetchPatientsSaga() {
   }
 }
 
-// SUBMIT FORM (FIXED)
+// SUBMIT FORM 
 function* submitFormSaga(action) 
 {
   console.log("Submitting form", action.payload);
@@ -113,6 +115,8 @@ function* processQueueSaga()
 function* patientDetailsSaga(action) 
 {
   try {
+    yield delay(3000); // Simulate network delay
+
     yield put({ type: A.SET_LOADING, payload: true });
 
     const data = yield call(fetchPatientDetailsAPI, action.payload);
@@ -122,9 +126,15 @@ function* patientDetailsSaga(action)
   } catch (e) {
     yield put({ type: A.SET_ERROR, payload: e.message });
   }
+  finally {
+    if(yield cancelled())
+    {
+      console.log("Cancelled: ", action.payload);
+    }
+  }
 }
 
-// ROOT SAGA
+// ROOT SAGA - Watcher Saga
 export default function* rootSaga() 
 {
   yield takeEvery(A.FETCH_PATIENTS, fetchPatientsSaga);
@@ -132,6 +142,6 @@ export default function* rootSaga()
   yield takeEvery(A.SUBMIT_PATIENT_FORM, submitFormSaga);
 
   yield takeEvery(A.PROCESS_QUEUE, processQueueSaga);
-  
+
   yield takeLatest(A.FETCH_PATIENT_DETAILS, patientDetailsSaga);
 }

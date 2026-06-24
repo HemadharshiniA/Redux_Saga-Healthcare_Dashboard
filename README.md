@@ -97,27 +97,6 @@ based on browser network status.
 
 ---
 
-## Project Structure
-
-src
-│
-├── components
-│ ├── PatientList.js
-│ ├── PatientDetails.js
-│ └── PatientForm.js
-│
-├── redux
-│ ├── actions.js
-│ ├── reducer.js
-│ ├── saga.js
-│ └── store.js
-│
-├── App.js
-├── App.css
-└── index.js
-
----
-
 ## Redux Saga Flow
 
 ```text
